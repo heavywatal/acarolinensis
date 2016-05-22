@@ -196,11 +196,19 @@ def calc_N0(u):
     return theta_Florida / (4 * u)
 
 
-def make_bounds(N0):
+def make_bounds_full(N0):
     # parameters (nu2b, nu2f, m12, m21, T)
     lower_bound = [2 / N0, 0.0001, 1e-2, 1e-2, 50 / (2 * N0)]
     upper_bound = [1000 / N0, 1.0, 10, 10, 500 / (2 * N0)]
     init = [100 / N0, 0.01, 1, 1, 100 / (2 * N0)]
+    return (lower_bound, upper_bound, init)
+
+
+def make_bounds_time(N0):
+    # parameters (nu2b, nu2f, T)
+    lower_bound = [2 / N0, 0.0001, 50 / (2 * N0)]
+    upper_bound = [1000 / N0, 1.0, 500 / (2 * N0)]
+    init = [100 / N0, 0.01, 100 / (2 * N0)]
     return (lower_bound, upper_bound, init)
 
 
@@ -246,6 +254,17 @@ if __name__ == '__main__':
     (root, ext) = os.path.splitext(args.infile)
     fs_obs = dadi.Spectrum.from_file(args.infile)
 
+    # Make the extrapolating version of our demographic model function.
+    if args.full:
+        model = exponential_full_model
+        fixed = [None, None, None, None, None]
+        make_bounds = make_bounds_full
+    else:
+        model = exponential_time_model
+        fixed = [None, None, None]
+        make_bounds = make_bounds_time
+    extrap_log = dadi.Numerics.make_extrap_log_func(model)
+
     if args.load:
         (base, ext) = os.path.splitext(args.load)
         u = float(base.split('_')[1])
@@ -263,15 +282,6 @@ if __name__ == '__main__':
     print(lower_bound)
     print(upper_bound)
 
-    # Make the extrapolating version of our demographic model function.
-    if args.full:
-        model = exponential_full_model
-        fixed = [None, None, None, None, None]
-    else:
-        model = exponential_time_model
-        fixed = [None, None, 0, 0, None]
-    extrap_log = dadi.Numerics.make_extrap_log_func(model)
-
     if args.dry_run:
         exit()
     elif args.optimize:
@@ -284,8 +294,8 @@ if __name__ == '__main__':
         print('log(lik): ' + str(log_likelihood(fs_obs, extrap_log, p_opt)))
         p_opt = p_opt.tolist()
         print(p_opt)
-        params = name_params(p_opt, args.mutation)
-        print(translate(params))
+        # params = name_params(p_opt, args.mutation)
+        # print(translate(params))
         if args.full:
             prefix = 'popt-' + root + '-full'
         else:
