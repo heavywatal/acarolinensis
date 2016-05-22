@@ -204,8 +204,8 @@ def make_bounds_full(N0):
 
 def make_bounds_time(N0):
     # parameters (nu2b, nu2f, T)
-    lower_bound = [2 / N0, 0.0001, 50 / (2 * N0)]
-    upper_bound = [1000 / N0, 1.0, 500 / (2 * N0)]
+    lower_bound = [2 / N0, 0.001, 50 / (2 * N0)]
+    upper_bound = [1000 / N0, 1.0, 100 / (2 * N0)]
     init = [100 / N0, 0.01, 100 / (2 * N0)]
     return (lower_bound, upper_bound, init)
 
