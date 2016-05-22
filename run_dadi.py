@@ -147,6 +147,12 @@ def exponential_time_model(params, fs_size, pts):
     return exponential_full_model(params, fs_size, pts)
 
 
+def exponential_minimal_model(params, fs_size, pts):
+    (nu2b, nu2f) = params
+    params = (nu2b, nu2f, 0, 0, T_rel)
+    return exponential_full_model(params, fs_size, pts)
+
+
 #########1#########2#########3#########4#########5#########6#########7#########
 # Exhaustive loops
 
@@ -159,6 +165,8 @@ def exhaustive_loops(fs_obs, func_ex, params_grid):
     results = {}
     it = itertools.product(*params_grid)
     for params in it:
+        if params[0] > params[1]:
+            continue
         print(params)
         results[params] = log_likelihood(fs_obs, func_ex, params)
     return results
@@ -185,7 +193,9 @@ def save_results(results, outfile):
 # E. coli: 2.2e-10 per base per generation (Lee 2012 PNAS)
 
 pts_l = [40, 50, 60]
+N0 = None
 T_split = 50.0
+T_rel = None
 theta_Florida = 0.0014
 
 
@@ -194,7 +204,7 @@ def calc_N0(u):
     return theta_Florida / (4 * u)
 
 
-def make_bounds_full(N0):
+def make_bounds_full():
     # parameters (nu2b, nu2f, m12, m21, T)
     lower_bound = [2 / N0, 0.0001, 1e-2, 1e-2, 50 / (2 * N0)]
     upper_bound = [1000 / N0, 1.0, 10, 10, 500 / (2 * N0)]
@@ -202,11 +212,19 @@ def make_bounds_full(N0):
     return (lower_bound, upper_bound, init)
 
 
-def make_bounds_time(N0):
+def make_bounds_time():
     # parameters (nu2b, nu2f, T)
     lower_bound = [2 / N0, 0.001, 50 / (2 * N0)]
     upper_bound = [1000 / N0, 1.0, 100 / (2 * N0)]
     init = [100 / N0, 0.01, 100 / (2 * N0)]
+    return (lower_bound, upper_bound, init)
+
+
+def make_bounds_minimal():
+    # parameters (nu2b, nu2f, T)
+    lower_bound = [2 / N0, 0.001]
+    upper_bound = [1000 / N0, 1.0]
+    init = [100 / N0, 0.01]
     return (lower_bound, upper_bound, init)
 
 
@@ -218,7 +236,7 @@ def make_grid(lower_bound, upper_bound, breaks=6):
 
 def name_params(params, u):
     return {'u': u,
-            'N0': calc_N0(u),
+            'N0': N0,
             'nu2b': params[0],
             'nu2f': params[1],
             'm12': params[2],
@@ -227,7 +245,6 @@ def name_params(params, u):
 
 
 def translate(params):
-    N0 = params['N0']
     params['nu2b'] *= N0
     params['nu2f'] *= N0
     params['m12'] *= N0 * 2
@@ -243,7 +260,8 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--dry-run', action='store_true')
     parser.add_argument('-e', '--exhaustive', action='store_true')
     parser.add_argument('-o', '--optimize', action='store_true')
-    parser.add_argument('-f', '--full', action='store_true')
+    parser.add_argument('-m', '--mode',
+                        choices=['full', 'time', 'minimal'], default='minimal')
     parser.add_argument('-u', '--mutation', type=float, default=1e-8)
     parser.add_argument('-b', '--breaks', type=int, default=6)
     parser.add_argument('-l', '--load')
@@ -254,36 +272,39 @@ if __name__ == '__main__':
     fs_obs = dadi.Spectrum.from_file(args.infile)
 
     # Make the extrapolating version of our demographic model function.
-    if args.full:
+    if args.mode == 'full':
         model = exponential_full_model
         fixed = [None, None, None, None, None]
         make_bounds = make_bounds_full
-    else:
+    elif args.mode == 'time':
         model = exponential_time_model
         fixed = [None, None, None]
         make_bounds = make_bounds_time
+    elif args.mode == 'minimal':
+        model = exponential_minimal_model
+        fixed = [None, None]
+        make_bounds = make_bounds_minimal
     extrap_log = dadi.Numerics.make_extrap_log_func(model)
 
     if args.load:
         (base, ext) = os.path.splitext(args.load)
         u = float(base.split('_')[1])
         N0 = calc_N0(u)
-        (lower_bound, upper_bound, p0) = make_bounds(N0)
+        T_rel = T_split / (2 * N0)
+        (lower_bound, upper_bound, p0) = make_bounds()
         with open(args.load, 'r') as fin:
             p0 = json.load(fin)
     else:
         N0 = calc_N0(args.mutation)
-        (lower_bound, upper_bound, p0) = make_bounds(N0)
+        T_rel = T_split / (2 * N0)
+        (lower_bound, upper_bound, p0) = make_bounds()
 
-    T_rel = T_split / (2 * N0)
     print('theta={}, u={}, N0={}, T={}'.format(
         theta_Florida, args.mutation, N0, T_rel))
     print(lower_bound)
     print(upper_bound)
 
-    if args.dry_run:
-        exit()
-    elif args.optimize:
+    if args.optimize:
         p_opt = dadi.Inference.optimize_log(p0, fs_obs, extrap_log, pts_l,
                                             lower_bound=lower_bound,
                                             upper_bound=upper_bound,
@@ -295,10 +316,7 @@ if __name__ == '__main__':
         print(p_opt)
         # params = name_params(p_opt, args.mutation)
         # print(translate(params))
-        if args.full:
-            prefix = 'popt-' + root + '-full'
-        else:
-            prefix = 'popt-' + root + '-time'
+        prefix = 'popt-{}-{}'.format(root, args.mode)
         if args.load:
             prefix += '-loadpexh'
         with open(prefix + '.json', 'w') as fout:
@@ -308,12 +326,11 @@ if __name__ == '__main__':
     elif args.exhaustive:
         params_grid = make_grid(lower_bound, upper_bound, args.breaks)
         print(params_grid)
-        if args.full:
-            prefix = root + '-full'
-        else:
-            prefix = root + '-time'
+        prefix = '{}-{}'.format(root, args.mode)
         outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
         print(outfile)
+        if args.dry_run:
+            exit()
         results = exhaustive_loops(fs_obs, extrap_log, params_grid)
         save_results(results, outfile)
     else:

@@ -10,6 +10,7 @@ import json
 def load_json(infile, n=20):
     with open(infile, 'r') as fin:
         results = json.load(fin)
+    results = [[k, v] for k, v in results if k[0] < k[1]]
     return sorted(results, key=lambda x: x[1], reverse=True)[1:n]
 
 
