@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-https://bitbucket.org/RyanGutenkunst/dadi
+https://bitbucket.org/gutenkunstlab/dadi
 """
 import os
 import re
@@ -79,9 +79,9 @@ def plot_dadi2d(fs_obs, model_output):
     return fig
 
 
-def save_png_seaborn(outfile, fs_obs, func_ex, param):
+def save_png_seaborn(outfile, fs_obs, model, param):
     sns.plt.clf()
-    fig = plot_dadi2d(fs_obs, func_ex(p_opt, fs_obs.sample_sizes, pts_l))
+    fig = plot_dadi2d(fs_obs, model(param, fs_obs.sample_sizes, pts_l))
     sns.plt.draw()
     fig.savefig(outfile)
     fig.clf()
@@ -115,7 +115,7 @@ def test_growth():
 #########1#########2#########3#########4#########5#########6#########7#########
 # Model
 
-def exponential_model(params, fs_size, pts):
+def exponential_full_model(params, fs_size, pts):
     """
     nu2b: The bottleneck size for pop2
     nu2f: The final size for pop2
@@ -141,6 +141,12 @@ def exponential_model(params, fs_size, pts):
     return dadi.Spectrum.from_phi(phi, (n1, n2), (grid, grid)).fold()
 
 
+def exponential_time_model(params, fs_size, pts):
+    (nu2b, nu2f, T) = params
+    params = (nu2b, nu2f, 0, 0, T)
+    return exponential_full_model(params, fs_size, pts)
+
+
 #########1#########2#########3#########4#########5#########6#########7#########
 # Exhaustive loops
 
@@ -160,21 +166,9 @@ def exhaustive_loops(fs_obs, func_ex,
     return results
 
 
-def print_head(results, n=20):
-    lst = sorted(results.items(), key=lambda x: x[1], reverse=True)
-    for (key, value) in lst[1:n]:
-        print([key, value])
-
-
 def save_results(results, outfile):
     with open(outfile, 'w') as fout:
         json.dump(results.items(), fout)
-
-
-def load_json(infile, n=20):
-    with open(infile, 'r') as fin:
-        results = json.load(fin)
-    return sorted(results, key=lambda x: x[1], reverse=True)[1:n]
 
 
 #########1#########2#########3#########4#########5#########6#########7#########
@@ -202,19 +196,13 @@ def calc_N0(u):
     return theta_Florida / (4 * u)
 
 
-def make_bounds_pre(N0):
-    # parameters (nu2b, nu2f, m12, m21, T)
-    lower_bound = [2 / N0, 0.0001, 1e-6, 1e-6, 50 / (2 * N0)]
-    upper_bound = [1000 / N0, 1.0, 1e-2, 1e-2, 500 / (2 * N0)]
-    init = [100 / N0, 0.01, 1e-4, 1e-4, 100 / (2 * N0)]
-    return (lower_bound, upper_bound, init)
-
-
 def make_bounds(N0):
     # parameters (nu2b, nu2f, m12, m21, T)
-    lower_bound = [2 / N0, 0.0001, 0, 0, 50 / (2 * N0)]
-    upper_bound = [0.001, 1.0, 0, 0, 500 / (2 * N0)]
-    return (lower_bound, upper_bound)
+    lower_bound = [2 / N0, 0.0001, 1e-2, 1e-2, 50 / (2 * N0)]
+    upper_bound = [1000 / N0, 1.0, 10, 10, 500 / (2 * N0)]
+    init = [100 / N0, 0.01, 1, 1, 100 / (2 * N0)]
+    return (lower_bound, upper_bound, init)
+
 
 def make_grid(lower_bound, upper_bound, breaks=6):
     z = zip(lower_bound, upper_bound)
@@ -246,30 +234,47 @@ def translate(params):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--dry-run', action='store_true')
     parser.add_argument('-e', '--exhaustive', action='store_true')
     parser.add_argument('-o', '--optimize', action='store_true')
-    parser.add_argument('-l', '--load', action='store_true')
+    parser.add_argument('-f', '--full', action='store_true')
     parser.add_argument('-u', '--mutation', type=float, default=1e-8)
+    parser.add_argument('-l', '--load')
     parser.add_argument('infile')
     args = parser.parse_args()
 
     (root, ext) = os.path.splitext(args.infile)
+    fs_obs = dadi.Spectrum.from_file(args.infile)
 
-    N0 = calc_N0(args.mutation)
+    if args.load:
+        (base, ext) = os.path.splitext(args.load)
+        u = float(base.split('_')[1])
+        N0 = calc_N0(u)
+        (lower_bound, upper_bound, p0) = make_bounds(N0)
+        with open(args.load, 'r') as fin:
+            p0 = json.load(fin)
+    else:
+        N0 = calc_N0(args.mutation)
+        (lower_bound, upper_bound, p0) = make_bounds(N0)
+
     T_rel = T_split / (2 * N0)
-    (lower_bound, upper_bound, p0) = make_bounds_pre(N0)
-
     print('theta={}, u={}, N0={}, T={}'.format(
         theta_Florida, args.mutation, N0, T_rel))
     print(lower_bound)
     print(upper_bound)
 
     # Make the extrapolating version of our demographic model function.
-    extrap_log = dadi.Numerics.make_extrap_log_func(exponential_model)
-
-    if args.optimize:
-        fs_obs = dadi.Spectrum.from_file(args.infile)
+    if args.full:
+        model = exponential_full_model
+        fixed = [None, None, None, None, None]
+    else:
+        model = exponential_time_model
         fixed = [None, None, 0, 0, None]
+    extrap_log = dadi.Numerics.make_extrap_log_func(model)
+
+    if args.dry_run:
+        exit()
+    elif args.optimize:
         p_opt = dadi.Inference.optimize_log(p0, fs_obs, extrap_log, pts_l,
                                             lower_bound=lower_bound,
                                             upper_bound=upper_bound,
@@ -277,54 +282,42 @@ if __name__ == '__main__':
                                             epsilon=2e-3,
                                             verbose=1, maxiter=len(p0) * 200)
         print('log(lik): ' + str(log_likelihood(fs_obs, extrap_log, p_opt)))
-        print(p_opt.tolist())
-        print(translate(name_params(p_opt, args.mutation)))
+        p_opt = p_opt.tolist()
+        print(p_opt)
+        params = name_params(p_opt, args.mutation)
+        print(translate(params))
+        if args.full:
+            prefix = 'popt-' + root + '-full'
+        else:
+            prefix = 'popt-' + root + '-time'
+        if args.load:
+            prefix += '-loadpexh'
+        with open(prefix + '.json', 'w') as fout:
+            json.dump(p_opt, fout)
+        outfile = prefix + '.png'
+        save_png_seaborn(outfile, fs_obs, extrap_log, p_opt)
     elif args.exhaustive:
-        fs_obs = dadi.Spectrum.from_file(args.infile)
         params_grid = make_grid(lower_bound, upper_bound, 6)
         print(params_grid)
-        outfile = '{}_{:.2e}.json'.format(root, args.mutation)
+        if args.full:
+            prefix = root + '-full'
+        else:
+            prefix = root + '-time'
+        outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
         print(outfile)
         results = exhaustive_loops(fs_obs, extrap_log, *params_grid)
-        print_head(results)
         save_results(results, outfile)
-    elif args.load:
-        u = float(root.split('_')[1])
-        N0 = calc_N0(u)
-        (lower_bound, upper_bound) = make_bounds(N0)
-        fs_obs = dadi.Spectrum.from_file(root.split('_')[0] + '.fs')
-        results = load_json(args.infile, 10)
-        for (key, value) in results:
-            print([key, value])
-        p0, ll = results[0]
-        p_opt = dadi.Inference.optimize_log(p0, fs_obs, extrap_log, pts_l,
-                                            lower_bound=lower_bound,
-                                            upper_bound=upper_bound,
-                                            fixed_params=fixed,
-                                            epsilon=4e-3,
-                                            verbose=1, maxiter=len(p0) * 200)
-        params = name_params(p_opt, u)
-        with open('popt-' + root + '.json', 'w') as fout:
-            json.dump(params, fout)
-        outfile = root + '.png'
-        save_png_seaborn(outfile, fs_obs, extrap_log, p_opt)
-
     else:
-        fs_obs = dadi.Spectrum.from_file(args.infile)
-        #save_png_sfs(args.infile)
         print(marginal_stats(fs_obs, 0))
         print(marginal_stats(fs_obs, 1))
-        p_opt = [0.00047331468067680183, 0.02294559868542178, 0.0, 0.0, 0.0007142857142857143]
-        fs_exp = extrap_log(p_opt, fs_obs.sample_sizes, pts_l)
+        if not args.load:
+            exit()
+        p_opt = p0
+        fs_model = extrap_log(p_opt, fs_obs.sample_sizes, pts_l)
+        print(marginal_stats(fs_model, 0))
+        print(marginal_stats(fs_model, 1))
+        fs_exp = dadi.Inference.optimally_scaled_sfs(fs_model, fs_obs)
         print(marginal_stats(fs_exp, 0))
         print(marginal_stats(fs_exp, 1))
         outfile = root + '_test.png'
         save_png_seaborn(outfile, fs_obs, extrap_log, p_opt)
-
-# log(lik): -124374.93640508532
-# [0.00047331468067680183, 0.02294559868542178, 0.0, 0.0, 0.0007142857142857143]
-# {'nu2b': 16.566013823688063, 'm21': 0.0, 'nu2f': 803.09595398976228, 'm12': 0.0, 'u': 1e-08, 'T': 50.0, 'N0': 35000.0}
-
-# log(lik): -132401.558699
-# [0.0009977610940156722, 0.13027017292711654, 0.0, 0.0, 0.002260726523303243]
-# {'nu2b': 34.921638290548529, 'm21': 0.0, 'nu2f': 4559.4560524490789, 'm12': 0.0, 'u': 1e-08, 'T': 158.25085663122701, 'N0': 35000.0}

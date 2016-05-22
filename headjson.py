@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+"""
+import os
+import json
+#########1#########2#########3#########4#########5#########6#########7#########
+
+
+def load_json(infile, n=20):
+    with open(infile, 'r') as fin:
+        results = json.load(fin)
+    return sorted(results, key=lambda x: x[1], reverse=True)[1:n]
+
+
+#########1#########2#########3#########4#########5#########6#########7#########
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', type=int, default=30)
+    parser.add_argument('infile')
+    args = parser.parse_args()
+
+    (root, ext) = os.path.splitext(args.infile)
+
+    u = float(root.split('_')[1])
+    results = load_json(args.infile, args.n)
+    for (key, value) in results:
+        print([key, value])
+    param, ll = results[0]
+    with open('pexh-' + root + '.json', 'w') as fout:
+        json.dump(param, fout)
