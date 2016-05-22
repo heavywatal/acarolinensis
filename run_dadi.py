@@ -245,6 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--optimize', action='store_true')
     parser.add_argument('-f', '--full', action='store_true')
     parser.add_argument('-u', '--mutation', type=float, default=1e-8)
+    parser.add_argument('-b', '--breaks', type=int, default=6)
     parser.add_argument('-l', '--load')
     parser.add_argument('infile')
     args = parser.parse_args()
@@ -305,7 +306,7 @@ if __name__ == '__main__':
         outfile = prefix + '.png'
         save_png_seaborn(outfile, fs_obs, extrap_log, p_opt)
     elif args.exhaustive:
-        params_grid = make_grid(lower_bound, upper_bound, 6)
+        params_grid = make_grid(lower_bound, upper_bound, args.breaks)
         print(params_grid)
         if args.full:
             prefix = root + '-full'
