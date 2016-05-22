@@ -27,22 +27,6 @@ np.set_printoptions(linewidth=160)
 #########1#########2#########3#########4#########5#########6#########7#########
 # Data
 
-def convert2fs(snp_file):
-    """Parse the data file to generate the data dictionary
-    """
-    fs_file = re.sub(r'\..+$', '.fs', snp_file)
-    if os.path.exists(fs_file):
-        freq_spectrum = dadi.Spectrum.from_file(fs_file)
-    else:
-        data_dict = dadi.Misc.make_data_dict(snp_file)
-        pop_ids = ['Flo', 'Chi']
-        sample_sizes = [16, 16]
-        freq_spectrum = dadi.Spectrum.from_data_dict(data_dict, pop_ids, sample_sizes, polarized=False)
-        # polarized=False means folded=True
-        freq_spectrum.to_file(fs_file)
-    return freq_spectrum
-
-
 def marginal_stats(fs, dimension=0):
     d = dict()
     margin = fs.marginalize([dimension])
@@ -104,8 +88,8 @@ def save_png_seaborn(outfile, fs_obs, func_ex, param):
     fig.clf()
 
 
-def save_png_sfs(snp_file):
-    freq_spectrum = convert2fs(snp_file)
+def save_png_sfs(fs_file):
+    freq_spectrum = dadi.Spectrum.from_file(snp_file)
     fs_png = re.sub(r'\..+$', '.png', snp_file)
     dadi.Plotting.plot_single_2d_sfs(freq_spectrum, vmin=0.5)
     plt.savefig(fs_png)
@@ -299,7 +283,7 @@ if __name__ == '__main__':
     func_ex = dadi.Numerics.make_extrap_log_func(func)
 
     if args.optimize:
-        fs_obs = convert2fs(args.infile)
+        fs_obs = dadi.Spectrum.from_file(args.infile)
         p0 = make_init(N0)
         p_opt = dadi.Inference.optimize_log(p0, fs_obs, func_ex, pts_l,
                                             lower_bound=lower_bound,
@@ -310,7 +294,7 @@ if __name__ == '__main__':
         print([p_opt.tolist(), log_likelihood(fs_obs, func_ex, p_opt)])
         print(translate(name_params(p_opt, args.mutation)))
     elif args.exhaustive:
-        fs_obs = convert2fs(args.infile)
+        fs_obs = dadi.Spectrum.from_file(args.infile)
         params_grid = make_grid(lower_bound, upper_bound, 6)
         print(params_grid)
         outfile = '{}_{:.2e}.json'.format(root, args.mutation)
@@ -322,7 +306,7 @@ if __name__ == '__main__':
         u = float(root.split('_')[1])
         N0 = calc_N0(u)
         (lower_bound, upper_bound) = make_bounds(N0)
-        fs_obs = convert2fs(root.split('_')[0] + '.fs')
+        fs_obs = dadi.Spectrum.from_file(root.split('_')[0] + '.fs')
         results = load_json(args.infile, 10)
         for (key, value) in results:
             print([key, value])
@@ -340,7 +324,7 @@ if __name__ == '__main__':
         save_png_seaborn(outfile, fs_obs, func_ex, p_opt)
 
     else:
-        fs_obs = convert2fs(args.infile)
+        fs_obs = dadi.Spectrum.from_file(args.infile)
         #save_png_sfs(args.infile)
         print(marginal_stats(fs_obs, 0))
         print(marginal_stats(fs_obs, 1))
