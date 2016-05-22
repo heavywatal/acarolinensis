@@ -155,11 +155,9 @@ def log_likelihood(fs_obs, func_ex, params):
     return dadi.Inference.ll_multinom(fs_model, fs_obs)
 
 
-def exhaustive_loops(fs_obs, func_ex,
-                     range_nu2b, range_nu2f, range_m12, range_m21, range_T):
+def exhaustive_loops(fs_obs, func_ex, params_grid):
     results = {}
-    it = itertools.product(
-        range_nu2b, range_nu2f, range_m12, range_m21, range_T)
+    it = itertools.product(*params_grid)
     for params in it:
         print(params)
         results[params] = log_likelihood(fs_obs, func_ex, params)
@@ -315,7 +313,7 @@ if __name__ == '__main__':
             prefix = root + '-time'
         outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
         print(outfile)
-        results = exhaustive_loops(fs_obs, extrap_log, *params_grid)
+        results = exhaustive_loops(fs_obs, extrap_log, params_grid)
         save_results(results, outfile)
     else:
         print(marginal_stats(fs_obs, 0))
