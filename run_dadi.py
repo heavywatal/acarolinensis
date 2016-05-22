@@ -288,8 +288,8 @@ if __name__ == '__main__':
 
     if args.load:
         (base, ext) = os.path.splitext(args.load)
-        u = float(base.split('_')[1])
-        N0 = calc_N0(u)
+        args.mutation = float(base.split('_')[1])
+        N0 = calc_N0(args.mutation)
         T_rel = T_split / (2 * N0)
         (lower_bound, upper_bound, p0) = make_bounds()
         with open(args.load, 'r') as fin:
@@ -319,9 +319,10 @@ if __name__ == '__main__':
         prefix = 'popt-{}-{}'.format(root, args.mode)
         if args.load:
             prefix += '-loadpexh'
-        with open(prefix + '.json', 'w') as fout:
+        outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
+        with open(outfile, 'w') as fout:
             json.dump(p_opt, fout)
-        outfile = prefix + '.png'
+        outfile = '{}_{:.2e}.png'.format(prefix, args.mutation)
         save_png_seaborn(outfile, fs_obs, extrap_log, p_opt)
     elif args.exhaustive:
         params_grid = make_grid(lower_bound, upper_bound, args.breaks)
