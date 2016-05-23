@@ -152,7 +152,7 @@ def make_grid(lower_bound, upper_bound, breaks=6):
     return [np.logspace(np.log10(l), np.log10(u), breaks) for (l, u) in z]
 
 
-def name_params(params, u):
+def name_params(params):
     names = ('nu2b', 'nu2f', 'm12', 'm21', 'T')
     if len(params) <= 3:
         names = names[:2]
