@@ -4,6 +4,8 @@
 """
 import os
 import json
+
+import run_dadi
 #########1#########2#########3#########4#########5#########6#########7#########
 
 
@@ -23,11 +25,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     (root, ext) = os.path.splitext(args.infile)
+    mu = float(root.split('_')[1])
+    run_dadi.set_global(mu)
 
-    u = float(root.split('_')[1])
     results = load_json(args.infile, args.n)
     for (key, value) in results:
-        print([key, value])
+        print([run_dadi.translate(run_dadi.name_params(key, mu)), value])
+        # print([key, value])
     param, ll = results[0]
     with open('pexh-' + root + '.json', 'w') as fout:
         json.dump(param, fout)

@@ -153,21 +153,20 @@ def make_grid(lower_bound, upper_bound, breaks=6):
 
 
 def name_params(params, u):
-    return {'u': u,
-            'N0': N0,
-            'nu2b': params[0],
-            'nu2f': params[1],
-            'm12': params[2],
-            'm21': params[3],
-            'T': params[4]}
+    names = ('nu2b', 'nu2f', 'm12', 'm21', 'T')
+    if len(params) <= 3:
+        names = names[:2]
+    if len(params) == 3:
+        names.append('T')
+    return {k: v for k, v in zip(names, params)}
 
 
 def translate(params):
     params['nu2b'] *= N0
     params['nu2f'] *= N0
-    params['m12'] *= N0 * 2
-    params['m21'] *= N0 * 2
-    params['T'] *= N0 * 2
+    params['m12'] = params.get('m12', 0) * N0 * 2
+    params['m21'] = params.get('m21', 0) * N0 * 2
+    params['T'] = params.get('T', T_rel) * N0 * 2
     return params
 
 

@@ -9,7 +9,6 @@ import json
 
 import dadi
 
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -19,10 +18,6 @@ sns.set_style('white')
 #  darkgrid, whitegrid, dark, white, ticks
 #sns.set_palette('YlGnBu')
 #sns.despine()
-
-np.set_printoptions(linewidth=160)
-
-pts_l = run_dadi.pts_l
 
 
 #########1#########2#########3#########4#########5#########6#########7#########
@@ -122,10 +117,7 @@ if __name__ == '__main__':
     prefix = 'popt-{}-{}'.format(root, args.mode)
     outfile = '{}_{:.2e}.png'.format(prefix, args.mutation)
 
-    log_lik = run_dadi.log_likelihood(fs_obs, extrap_log, param)
-    print('log(lik): ' + str(log_lik))
-
-    model_output = extrap_log(param, fs_obs.sample_sizes, pts_l)
+    model_output = extrap_log(param, fs_obs.sample_sizes, run_dadi.pts_l)
     fig = plot_dadi2d(fs_obs, model_output)
     sns.plt.draw()
     fig.savefig(outfile)
