@@ -16,6 +16,10 @@ tidy = ms_stats %>>%
         mean=mean(value, na.rm=TRUE),
         sd=sd(value, na.rm=TRUE),
         q001=quantile(value, 0.01, na.rm=TRUE),
+        q003=quantile(value, 0.03, na.rm=TRUE),
+        q005=quantile(value, 0.05, na.rm=TRUE),
+        q095=quantile(value, 0.95, na.rm=TRUE),
+        q097=quantile(value, 0.97, na.rm=TRUE),
         q099=quantile(value, 0.99, na.rm=TRUE)) %>>% (?.)
 readr::write_tsv(.summary, 'ms_summary.tsv')
 
