@@ -115,7 +115,7 @@ if __name__ == '__main__':
     mu = float(root.split('_')[1])
     run_dadi.set_global(mu)
     prefix = 'popt-{}-{}'.format(root, args.mode)
-    outfile = '{}_{:.2e}.png'.format(prefix, args.mutation)
+    outfile = '{}_{:.2e}.png'.format(prefix, mu)
 
     model_output = extrap_log(param, fs_obs.sample_sizes, run_dadi.pts_l)
     fig = plot_dadi2d(fs_obs, model_output)
