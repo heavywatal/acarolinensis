@@ -9,6 +9,8 @@ import json
 
 import dadi
 
+import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -23,13 +25,14 @@ sns.set_style('white')
 #########1#########2#########3#########4#########5#########6#########7#########
 # Visualization
 
-def heatmap_sfs2d(fs, ax=None, vmax=None):
+def heatmap_sfs2d(fs, ax=None, vmax=None, vmin=None):
     if not vmax:
         vmax = fs.max()
     output = sns.heatmap(fs, mask=fs.mask,
-                         vmin=1, vmax=vmax,
-                         norm=sns.mplcol.LogNorm(vmin=1, vmax=vmax),
-                         ax=ax, square=True, cmap='Spectral')  # 'YlOrRd')
+                         vmin=vmin, vmax=vmax,
+                         norm=mpl.colors.LogNorm(vmin=1, vmax=vmax),
+                         cbar_kws={'ticks': mpl.ticker.LogLocator(numticks=6)},
+                         ax=ax, square=True, cmap='YlOrRd')
     output.invert_yaxis()
     return output
 
@@ -40,12 +43,14 @@ def plot_dadi2d(fs_obs, model_output):
     fs_res = dadi.Inference.Anscombe_Poisson_residual(fs_exp, fs_obs,
                                                       mask=True)
     vmax = max(fs_obs.max(), fs_exp.max())
+    vmin = fs_obs[np.nonzero(fs_obs)].min()
+    vmin = min(vmin, fs_exp[np.nonzero(fs_exp)].min())
     fig, grid = sns.plt.subplots(2, 2, figsize=(12, 12))
     ((ax_obs, ax_exp), (ax_res, ax_hist)) = grid
     #ax_cbar = fig.add_axes([0.05, 0.4, 0.01, 0.3])
     #ax_cbar_res = fig.add_axes([0.93, 0.4, 0.01, 0.3])
-    heatmap_sfs2d(fs_obs, ax_obs, vmax)
-    heatmap_sfs2d(fs_exp, ax_exp, vmax)
+    heatmap_sfs2d(fs_obs, ax_obs, vmax, vmin)
+    heatmap_sfs2d(fs_exp, ax_exp, vmax, vmin)
     sns.heatmap(fs_res, mask=fs_res.mask,
                 vmin=-abs(fs_res).max(), vmax=abs(fs_res.max()),
                 ax=ax_res, square=True, cmap='RdBu_r').invert_yaxis()
@@ -55,12 +60,9 @@ def plot_dadi2d(fs_obs, model_output):
     ax_exp.set_title('Expectation')
     ax_res.set_title('Residuals')
     ax_hist.set_title('Residuals')
-    ax_obs.set_xlabel('Chi')
-    ax_exp.set_xlabel('Chi')
-    ax_res.set_xlabel('Chi')
-    ax_obs.set_ylabel('Flo')
-    ax_exp.set_ylabel('Flo')
-    ax_res.set_ylabel('Flo')
+    for ax in [ax_obs, ax_exp, ax_res]:
+        ax.set_xlabel('Chichijima')
+        ax.set_ylabel('Florida')
     return fig
 
 
