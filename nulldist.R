@@ -35,12 +35,14 @@ readr::write_tsv(.summary, 'ms_summary.tsv')
 }
 
 .p = tidy %>>% #sample_n(20000) %>>%
+    dplyr::filter(!str_detect(variable, '_1$')) %>>%
     ggplot(aes(value))+
-    geom_histogram(bins=50)+
-    geom_vline(aes(xintercept=q001), dplyr::filter(.summary, grepl('^D_2', variable)))+
-    geom_vline(aes(xintercept=q099), dplyr::filter(.summary, grepl('^pi_2|^Fst', variable)))+
-    facet_wrap(~ variable, scale='free_x', ncol=3, labeller=.labeller)+
+    geom_histogram(bins=60)+
+    geom_point(pch=17, aes(x=q001, y=-2000), dplyr::filter(.summary, grepl('^D_2', variable)))+
+    geom_point(pch=17, aes(x=q099, y=-2000), dplyr::filter(.summary, grepl('^pi_2|^Fst', variable)))+
+    facet_wrap(~ variable, scales='free_x', ncol=3, labeller=.labeller)+
     theme_bw()+
+    theme(axis.title.x=element_blank())+
     theme(panel.grid.minor=element_blank())
 .p
-ggsave('null_distributions.png', .p, width=7, height=7)
+ggsave('null_distributions.png', .p, width=7, height=4)
