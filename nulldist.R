@@ -38,8 +38,8 @@ readr::write_tsv(.summary, 'ms_summary.tsv')
     dplyr::filter(!str_detect(variable, '_1$')) %>>%
     ggplot(aes(value))+
     geom_histogram(bins=60)+
-    geom_point(pch=17, aes(x=q001, y=-2000), dplyr::filter(.summary, grepl('^D_2', variable)))+
-    geom_point(pch=17, aes(x=q099, y=-2000), dplyr::filter(.summary, grepl('^pi_2|^Fst', variable)))+
+    geom_point(pch=17, aes(x=q005, y=-2000), dplyr::filter(.summary, grepl('^D_2', variable)))+
+    geom_point(pch=17, aes(x=q095, y=-2000), dplyr::filter(.summary, grepl('^pi_2|^Fst', variable)))+
     facet_wrap(~ variable, scales='free_x', ncol=3, labeller=.labeller)+
     theme_bw()+
     theme(axis.title.x=element_blank())+
