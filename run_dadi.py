@@ -146,7 +146,7 @@ def make_bounds_minimal():
     return (lower_bound, upper_bound, init)
 
 
-def make_grid(lower_bound, upper_bound, breaks=6):
+def make_grid(lower_bound, upper_bound, breaks):
     z = zip(lower_bound, upper_bound)
     print(z)
     return [np.logspace(np.log10(l), np.log10(u), breaks) for (l, u) in z]
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--mode',
                         choices=['full', 'time', 'minimal'], default='minimal')
     parser.add_argument('-u', '--mutation', type=float, default=1e-8)
-    parser.add_argument('-b', '--breaks', type=int, default=6)
+    parser.add_argument('-b', '--breaks', type=int, default=20)
     parser.add_argument('-l', '--load')
     parser.add_argument('infile')
     args = parser.parse_args()

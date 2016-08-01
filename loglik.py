@@ -49,7 +49,7 @@ if __name__ == '__main__':
     reg = sns.regplot('nu2b', 'nu2f', data=table, ax=ax, fit_reg=False,
                       marker='s', scatter_kws=kws)
     # print(out.get_children())
-    path_collection = reg.get_children()[0]
-    plt.colorbar(mappable=path_collection)
+    path_collection = reg.get_children()[2]
+    fig.colorbar(mappable=path_collection)
     # plt.show()  # opens a window
     fig.savefig('loglik_{}.png'.format(root))
