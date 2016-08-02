@@ -13,19 +13,17 @@ N0 = 35000
 
 .p = .data %>>%
 dplyr::mutate_at(vars(nu2b, nu2f), function(x) x * N0) %>>%
-#dplyr::filter(loglik > -1.5e5) %>>%
-dplyr::filter(loglik > -3e5) %>>%
-# dplyr::filter(loglik > -6e5) %>>%
+dplyr::filter(loglik > -3.2e5) %>>%
 ggplot(aes(x=nu2b, y=nu2f))+
 geom_raster(aes(fill=loglik))+
-scale_fill_gradient(low='#f0f0f0f0', high='#404040')+
-#scale_fill_distiller(direction=1)+
-# geom_contour(aes(z=loglik), colour='#000000', binwidth=4000)+
-geom_contour(aes(z=loglik), colour='#000000', binwidth=50000)+
-# geom_contour(aes(z=loglik), colour='#000000', size=1, binwidth=100000)+
-geom_point(data=.max_lik_params, colour='#000000', size=6)+
+scale_fill_gradient(name='log likelihood', low='#f0f0f0f0', high='#000000')+
+geom_point(data=.max_lik_params, colour='#ffffff', size=4)+
 scale_x_log10()+
 scale_y_log10()+
-theme_bw()
+coord_cartesian(expand=FALSE)+
+labs(x=expression(italic(N)["2b"]), y=expression(italic(N)['2f']))+
+theme_bw(base_family='sans')+
+theme(panel.grid.minor=element_blank())+
+theme(legend.position=c(1, 1), legend.justification=c(1, 1))
 .p
-ggsave('loglik_contour_grey.png', .p, width=7, height=6)
+ggsave('loglik_grey.png', .p, width=5, height=5)
