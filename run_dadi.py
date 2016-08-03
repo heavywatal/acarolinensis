@@ -80,8 +80,6 @@ def exhaustive_loops(fs_obs, func_ex, params_grid):
     results = {}
     it = itertools.product(*params_grid)
     for params in it:
-        if params[0] > params[1]:
-            continue
         print(params)
         results[params] = log_likelihood(fs_obs, func_ex, params)
     return results
