@@ -16,7 +16,7 @@ N0 = 35000
 max_loglik = max(.data$loglik)
 
 .p = .data %>>%
-dplyr::filter(loglik > 2 * max_loglik) %>>%
+dplyr::filter(loglik > 1.5 * max_loglik) %>>%
 ggplot(aes(x=nu2b, y=nu2f))+
 geom_raster(aes(fill=loglik))+
 scale_fill_gradient(name='log likelihood', low='#f0f0f0f0', high='#000000')+
