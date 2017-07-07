@@ -29,7 +29,6 @@ def make_cmd(nrep, nu2b, nu2f):
     return [str(x) for x in cmd]
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()

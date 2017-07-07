@@ -18,12 +18,9 @@ import run_dadi
 
 sns.set_style('white')
 #  darkgrid, whitegrid, dark, white, ticks
-#sns.set_palette('YlGnBu')
-#sns.despine()
+# sns.set_palette('YlGnBu')
+# sns.despine()
 
-
-#########1#########2#########3#########4#########5#########6#########7#########
-# Visualization
 
 def heatmap_sfs2d(fs, ax=None, vmax=None, vmin=None):
     if not vmax:
@@ -47,8 +44,8 @@ def plot_dadi2d(fs_obs, model_output):
     vmin = min(vmin, fs_exp[np.nonzero(fs_exp)].min())
     fig, grid = sns.plt.subplots(2, 2, figsize=(12, 12))
     ((ax_obs, ax_exp), (ax_res, ax_hist)) = grid
-    #ax_cbar = fig.add_axes([0.05, 0.4, 0.01, 0.3])
-    #ax_cbar_res = fig.add_axes([0.93, 0.4, 0.01, 0.3])
+    # ax_cbar = fig.add_axes([0.05, 0.4, 0.01, 0.3])
+    # ax_cbar_res = fig.add_axes([0.93, 0.4, 0.01, 0.3])
     heatmap_sfs2d(fs_obs, ax_obs, vmax, vmin)
     heatmap_sfs2d(fs_exp, ax_exp, vmax, vmin)
     sns.heatmap(fs_res, mask=fs_res.mask,
@@ -90,7 +87,6 @@ def test_growth():
     sns.plt.draw()
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()

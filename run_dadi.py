@@ -13,7 +13,7 @@ import numpy as np
 np.set_printoptions(linewidth=160)
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
+# #######1#########2#########3#########4#########5#########6#########7#########
 # Data
 
 def marginal_stats(fs, dimension=0):
@@ -27,7 +27,7 @@ def marginal_stats(fs, dimension=0):
     return d
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
+# #######1#########2#########3#########4#########5#########6#########7#########
 # Model
 
 def exponential_full_model(params, fs_size, pts):
@@ -68,7 +68,7 @@ def exponential_minimal_model(params, fs_size, pts):
     return exponential_full_model(params, fs_size, pts)
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
+# #######1#########2#########3#########4#########5#########6#########7#########
 # Exhaustive loops
 
 def log_likelihood(fs_obs, func_ex, params):
@@ -90,7 +90,7 @@ def save_results(results, outfile):
         json.dump(results.items(), fout)
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
+# #######1#########2#########3#########4#########5#########6#########7#########
 # Parameters
 
 # lizards LCNS: 5e-6 (Janes 2011)
@@ -168,7 +168,6 @@ def translate(params):
     return params
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()

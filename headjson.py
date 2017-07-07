@@ -6,7 +6,6 @@ import os
 import json
 
 import run_dadi
-#########1#########2#########3#########4#########5#########6#########7#########
 
 
 def load_json(infile, n=20):
@@ -16,7 +15,6 @@ def load_json(infile, n=20):
     return sorted(results, key=lambda x: x[1], reverse=True)[1:n]
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()

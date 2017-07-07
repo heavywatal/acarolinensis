@@ -12,7 +12,6 @@ import seaborn as sns
 import run_dadi
 
 sns.set_style('white')
-#########1#########2#########3#########4#########5#########6#########7#########
 
 
 def make_df(infile):
@@ -24,7 +23,6 @@ def make_df(infile):
     return df
 
 
-#########1#########2#########3#########4#########5#########6#########7#########
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
