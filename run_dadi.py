@@ -49,7 +49,7 @@ def exponential_full_model(params, fs_size, pts):
     phi = dadi.PhiManip.phi_1D_to_2D(grid, phi)
 
     def nu2_func(t):
-        return nu2b * (nu2f / nu2b) ** (t / T)
+        return nu2b * ((nu2f / nu2b) ** (t / T))
     phi = dadi.Integration.two_pops(phi, grid, T, nu1=1, nu2=nu2_func,
                                     m12=m12, m21=m21)
     # Finally, calculate the spectrum.
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                                             lower_bound=lower_bound,
                                             upper_bound=upper_bound,
                                             fixed_params=fixed,
-                                            epsilon=2e-3,
+                                            epsilon=1e-3,
                                             verbose=1, maxiter=len(p0) * 200)
         print('log(lik): ' + str(log_likelihood(fs_obs, extrap_log, p_opt)))
         p_opt = p_opt.tolist()
@@ -232,6 +232,7 @@ if __name__ == '__main__':
         if args.load:
             prefix += '-loadpexh'
         outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
+        print('Writing ' + outfile)
         with open(outfile, 'w') as fout:
             json.dump(p_opt, fout)
     elif args.exhaustive:
@@ -239,12 +240,14 @@ if __name__ == '__main__':
         print(params_grid)
         prefix = '{}-{}'.format(root, args.mode)
         outfile = '{}_{:.2e}.json'.format(prefix, args.mutation)
-        print(outfile)
+        print('Writing ' + outfile)
         if args.dry_run:
             exit()
         results = exhaustive_loops(fs_obs, extrap_log, params_grid)
         save_results(results, outfile)
     else:
+        print('Note: add -o or -e to run dadi')
+        print(fs_obs.sample_sizes)
         print(marginal_stats(fs_obs, 0))
         print(marginal_stats(fs_obs, 1))
         if not args.load:

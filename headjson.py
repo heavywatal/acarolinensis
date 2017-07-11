@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+"""Read json | sort by likelihood | print head(n) and write MLE to a new json
 """
 import os
 import json
@@ -11,8 +11,8 @@ import run_dadi
 def load_json(infile, n=20):
     with open(infile, 'r') as fin:
         results = json.load(fin)
-    results = [[k, v] for k, v in results if k[0] < k[1]]
-    return sorted(results, key=lambda x: x[1], reverse=True)[1:n]
+    results = [[k, v] for k, v in results]
+    return sorted(results, key=lambda x: x[1], reverse=True)[0:n]
 
 
 if __name__ == '__main__':
@@ -28,8 +28,9 @@ if __name__ == '__main__':
 
     results = load_json(args.infile, args.n)
     for (key, value) in results:
-        print([run_dadi.translate(run_dadi.name_params(key, mu)), value])
-        # print([key, value])
+        print([run_dadi.translate(run_dadi.name_params(key)), value])
     param, ll = results[0]
-    with open('pexh-' + root + '.json', 'w') as fout:
+    outfile = 'pexh-' + root + '.json'
+    print('Writing ' + outfile)
+    with open(outfile, 'w') as fout:
         json.dump(param, fout)
