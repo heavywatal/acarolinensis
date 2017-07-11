@@ -35,14 +35,14 @@ def heatmap_sfs2d(fs, ax=None, vmax=None, vmin=None):
 
 
 def plot_dadi2d(fs_obs, model_output):
-    sns.plt.clf()
+    plt.clf()
     fs_exp = dadi.Inference.optimally_scaled_sfs(model_output, fs_obs)
     fs_res = dadi.Inference.Anscombe_Poisson_residual(fs_exp, fs_obs,
                                                       mask=True)
     vmax = max(fs_obs.max(), fs_exp.max())
     vmin = fs_obs[np.nonzero(fs_obs)].min()
     vmin = min(vmin, fs_exp[np.nonzero(fs_exp)].min())
-    fig, grid = sns.plt.subplots(2, 2, figsize=(12, 12))
+    fig, grid = plt.subplots(2, 2, figsize=(12, 12))
     ((ax_obs, ax_exp), (ax_res, ax_hist)) = grid
     # ax_cbar = fig.add_axes([0.05, 0.4, 0.01, 0.3])
     # ax_cbar_res = fig.add_axes([0.93, 0.4, 0.01, 0.3])
@@ -83,8 +83,8 @@ def growth(t, nu2b=0.0001, nu2f=0.01, T=100.0):
 
 
 def test_growth():
-    sns.plt.plot(range(100), [growth(t) for t in range(100)])
-    sns.plt.draw()
+    plt.plot(range(100), [growth(t) for t in range(100)])
+    plt.draw()
 
 
 if __name__ == '__main__':
@@ -117,6 +117,6 @@ if __name__ == '__main__':
 
     model_output = extrap_log(param, fs_obs.sample_sizes, run_dadi.pts_l)
     fig = plot_dadi2d(fs_obs, model_output)
-    sns.plt.draw()
+    plt.draw()
     fig.savefig(outfile)
     fig.clf()
