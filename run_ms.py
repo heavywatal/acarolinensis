@@ -8,8 +8,7 @@ import json
 import run_dadi
 
 
-def make_cmd(nrep, nu2b, nu2f):
-    sample_sizes = [16, 16]
+def make_cmd(nrep, sample_sizes, nu2b, nu2f):
     L = 10000
     theta = run_dadi.theta_Florida
     T_abs = run_dadi.T_split
@@ -34,6 +33,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--dry-run', action='store_true')
     parser.add_argument('-r', '--nrep', type=int, default=1)
+    parser.add_argument('-I', '--sample-sizes',
+                        nargs=2, type=int, default=[16, 16])
     parser.add_argument('infile')
     args = parser.parse_args()
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     run_dadi.set_global(mu)
     with open(args.infile, 'r') as fin:
         params = json.load(fin)
-    cmd = make_cmd(args.nrep, *params)
+    cmd = make_cmd(args.nrep, args.sample_sizes, *params)
     sys.stderr.write(' '.join(cmd) + '\n')
     if not args.dry_run:
         subprocess.call(cmd)
