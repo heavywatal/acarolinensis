@@ -1,6 +1,6 @@
 # Anolis carolinensis in Ogasawara Archipelago
 
-## Preparation
+## Install [dadi](https://bitbucket.org/gutenkunstlab/dadi)
 
 1.  Install `pip` and `virtualenv` for macOS system python 2
     ```sh
@@ -8,18 +8,20 @@
     % ~/Library/Python/2.7/bin/pip install -U setuptools pip virtualenv
     ```
 
-1.  Create a new virtual environment, and activate it:
+1.  Create a new virtual environment, and install required packages in it:
     ```sh
     % ~/Library/Python/2.7/bin/virtualenv ~/.virtualenv/dadi
     % source ~/.virtualenv/dadi/bin/activate
-    (dadi) % pip install -U setuptools pip
-    (dadi) % pip install -U flake8 seaborn
+    (dadi) % pip install -U setuptools pip flake8
+    (dadi) % pip install -U seaborn
     ```
 
-1.  Fetch and install [dadi](https://bitbucket.org/gutenkunstlab/dadi):
+1.  Fetch and install dadi:
     ```sh
-    (dadi) % git clone https://heavywatal@bitbucket.org/gutenkunstlab/dadi.git
+    (dadi) % git clone https://bitbucket.org/gutenkunstlab/dadi.git
     (dadi) % cd dadi/
+    (dadi) % git tag
+    (dadi) % git checkout 1.7.0
     (dadi) % python setup.py install
     ```
 
