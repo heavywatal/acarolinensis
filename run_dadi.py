@@ -259,3 +259,4 @@ if __name__ == '__main__':
         fs_exp = dadi.Inference.optimally_scaled_sfs(fs_model, fs_obs)
         print(marginal_stats(fs_exp, 0))
         print(marginal_stats(fs_exp, 1))
+        print(p0 + [log_likelihood(fs_obs, extrap_log, p0)])

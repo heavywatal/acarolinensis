@@ -1,8 +1,10 @@
 library(tidyverse)
 library(jsonlite)
 
+prefix = 'Acar20160203'
+prefix = 'Acar20170707'
 N0 = 35000
-.exhaustive = fromJSON('./Acar20170707-minimal_1.00e-08.json') %>%
+.exhaustive = fromJSON(paste0(prefix, '-minimal_1.00e-08.json')) %>%
     purrr::map_df(~{
       xy = .[[1]]
       tibble(nu2b= xy[1], nu2f= xy[2], loglik=.[[2]])
@@ -19,7 +21,9 @@ read_param_json = function(infile) {
     dplyr::mutate_at(vars(nu2b, nu2f), function(x) x * N0)
 }
 
-.max_lik_params_opt = read_param_json('./popt-Acar20170707-minimal-loadpexh_1.00e-08.json') %>% print()
+.max_lik_params_opt =
+    paste0('popt-', prefix, '-minimal-loadpexh_1.00e-08.json') %>%
+    read_param_json() %>% print()
 
 .p = .exhaustive %>%
     dplyr::filter(loglik > 1.2 * max_loglik) %>%
@@ -36,4 +40,4 @@ read_param_json = function(infile) {
     theme(panel.grid.minor=element_blank())+
     theme(legend.position=c(1, 1), legend.justification=c(1, 1))
 .p
-ggsave('loglik_grey-Acar20170707.png', .p, width=5, height=5)
+ggsave(paste0('loglik_grey-', prefix, '.png'), .p, width=4, height=4)
